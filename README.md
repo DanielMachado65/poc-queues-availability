@@ -13,6 +13,27 @@ Install dependencies once:
 npm install
 ```
 
+## Running Messaging Services Locally
+
+Start RabbitMQ, NATS and a local SQS implementation using Docker Compose:
+
+```bash
+docker-compose up -d
+```
+
+This will expose the following ports:
+
+- RabbitMQ: `5672` (AMQP) and `15672` (management UI)
+- NATS: `4222`
+- LocalStack (SQS): `4566`
+
+Set the following environment variables when running the scripts to connect to
+these local services:
+
+- `RABBITMQ_URL=amqp://localhost`
+- `NATS_URL=nats://localhost:4222`
+- `AWS_REGION=us-east-1` and `SQS_ENDPOINT=http://localhost:4566`
+
 ## RabbitMQ Test
 
 Set `RABBITMQ_URL` to your RabbitMQ server (for example from AmazonMQ) and optionally `RABBITMQ_QUEUE`.

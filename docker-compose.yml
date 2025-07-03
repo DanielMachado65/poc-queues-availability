@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  nats:
+    image: nats:2
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+
+  localstack:
+    image: localstack/localstack
+    environment:
+      - SERVICES=sqs
+    ports:
+      - "4566:4566"

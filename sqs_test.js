@@ -9,8 +9,12 @@ const {
 async function main() {
   const queueName = process.env.SQS_QUEUE || 'test-queue';
   const region = process.env.AWS_REGION || 'us-east-1';
+  const endpoint = process.env.SQS_ENDPOINT;
 
-  const client = new SQSClient({ region });
+  const client = new SQSClient({
+    region,
+    ...(endpoint ? { endpoint } : {}),
+  });
 
   const { QueueUrl } = await client.send(new CreateQueueCommand({ QueueName: queueName }));
   const message = 'Hello SQS';
