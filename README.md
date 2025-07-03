@@ -43,12 +43,14 @@ these local services:
 - `AWS_REGION=us-east-1`
 - `SQS_ENDPOINT=http://localhost:4566`
 - optionally `AWS_ACCESS_KEY_ID=test` and `AWS_SECRET_ACCESS_KEY=test`
+- `MESSAGE_RATE=100` number of messages per second (default)
+- `TEST_DURATION_SEC=600` duration in seconds (default 10 minutes)
 
 ## RabbitMQ Test
 
 Set `RABBITMQ_URL` to your RabbitMQ server (for example from AmazonMQ) and optionally `RABBITMQ_QUEUE`.
 
-Run:
+Run (you can override `MESSAGE_RATE` and `TEST_DURATION_SEC`):
 
 ```bash
 node rabbitmq_test.js
@@ -58,7 +60,7 @@ node rabbitmq_test.js
 
 Configure AWS credentials and set `AWS_REGION` and optionally `SQS_QUEUE`.
 
-Run:
+Run (you can override `MESSAGE_RATE` and `TEST_DURATION_SEC`):
 
 ```bash
 node sqs_test.js
@@ -68,7 +70,7 @@ node sqs_test.js
 
 Set `NATS_URL` to your NATS server and optionally `NATS_SUBJECT`.
 
-Run:
+Run (you can override `MESSAGE_RATE` and `TEST_DURATION_SEC`):
 
 ```bash
 node nats_test.js
