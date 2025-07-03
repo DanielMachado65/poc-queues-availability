@@ -37,6 +37,7 @@ async function main() {
     process.env.MESSAGE_COUNT || (rate * durationSec).toString(),
     10
   );
+  const failAfter = parseInt(process.env.FAIL_AFTER_SEC || '0', 10);
 
   let QueueUrl;
   try {
@@ -57,6 +58,13 @@ async function main() {
   let duplicates = 0;
 
   const start = Date.now();
+
+  if (failAfter > 0) {
+    setTimeout(() => {
+      console.log('Simulating SQS failure: switching to invalid endpoint');
+      client.config.endpoint = 'http://127.0.0.1:9';
+    }, failAfter * 1000);
+  }
 
   const sendInterval = setInterval(async () => {
     const promises = [];

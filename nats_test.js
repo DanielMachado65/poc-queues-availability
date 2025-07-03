@@ -11,6 +11,7 @@ async function main() {
     process.env.MESSAGE_COUNT || (rate * durationSec).toString(),
     10
   );
+  const failAfter = parseInt(process.env.FAIL_AFTER_SEC || '0', 10);
 
   let nc;
   try {
@@ -28,6 +29,12 @@ async function main() {
   let duplicates = 0;
 
   const start = Date.now();
+  if (failAfter > 0) {
+    setTimeout(() => {
+      console.log('Simulating NATS failure: closing connection');
+      nc.close();
+    }, failAfter * 1000);
+  }
   const sub = nc.subscribe(subject);
   (async () => {
     for await (const m of sub) {
