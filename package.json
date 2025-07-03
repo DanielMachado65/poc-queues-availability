@@ -6,7 +6,8 @@
   "scripts": {
     "nats": "node nats_test.js",
     "rabbitmq": "node rabbitmq_test.js",
-    "sqs": "node sqs_test.js"
+    "sqs": "node sqs_test.js",
+    "kafka": "node kafka_test.js"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +18,7 @@
     "@pulumi/aws": "^6.83.0",
     "@pulumi/pulumi": "^3.181.0",
     "amqplib": "^0.10.8",
-    "nats": "^2.29.3"
+    "nats": "^2.29.3",
+    "kafkajs": "^2.2.4"
   }
 }
