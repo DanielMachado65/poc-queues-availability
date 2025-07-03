@@ -44,19 +44,27 @@ async function main() {
     queue,
     (msg) => {
       if (msg !== null) {
-        const { id, ts } = JSON.parse(msg.content.toString());
-        const now = Date.now();
-        latencies.push(now - ts);
-        if (seen.has(id)) duplicates++;
-        seen.add(id);
-        received++;
-        channel.ack(msg);
-        if (received === count) {
-          const duration = (now - start) / 1000;
-          console.log('p95 latency ms:', percentile(latencies, 95));
-          console.log('duplicates:', duplicates);
-          console.log('throughput msg/s:', (received / duration).toFixed(2));
-          connection.close();
+        try {
+          const messageContent = msg.content.toString();
+          console.log('Received message content:', messageContent); // Debug log
+          const { id, ts } = JSON.parse(messageContent);
+          const now = Date.now();
+          latencies.push(now - ts);
+          if (seen.has(id)) duplicates++;
+          seen.add(id);
+          received++;
+          channel.ack(msg);
+          if (received === count) {
+            const duration = (now - start) / 1000;
+            console.log('p95 latency ms:', percentile(latencies, 95));
+            console.log('duplicates:', duplicates);
+            console.log('throughput msg/s:', (received / duration).toFixed(2));
+            connection.close();
+          }
+        } catch (error) {
+          console.error('Error parsing message:', error.message);
+          console.error('Message content:', msg.content.toString());
+          channel.ack(msg); // Acknowledge the message to prevent reprocessing
         }
       }
     },
