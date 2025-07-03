@@ -18,3 +18,11 @@ services:
       - SERVICES=sqs
     ports:
       - "4566:4566"
+  kafka:
+    image: bitnami/kafka:latest
+    environment:
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+    ports:
+      - "9092:9092"

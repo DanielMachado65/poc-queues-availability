@@ -1,6 +1,6 @@
 # poc-queues-availability
 
-This repository contains simple scripts to test different messaging technologies (RabbitMQ, AWS SQS and NATS). Each script sends and receives a single message demonstrating basic connectivity.
+This repository contains simple scripts to test different messaging technologies (RabbitMQ, AWS SQS, NATS and Kafka). Each script sends and receives a single message demonstrating basic connectivity.
 
 ## Requirements
 
@@ -19,11 +19,12 @@ You can run the example scripts via npm:
 npm run rabbitmq   # test RabbitMQ
 npm run sqs        # test SQS
 npm run nats       # test NATS
+npm run kafka      # test Kafka
 ```
 
 ## Running Messaging Services Locally
 
-Start RabbitMQ, NATS and a local SQS implementation using Docker Compose:
+Start RabbitMQ, NATS, Kafka and a local SQS implementation using Docker Compose:
 
 ```bash
 docker-compose up -d
@@ -34,12 +35,14 @@ This will expose the following ports:
 - RabbitMQ: `5672` (AMQP) and `15672` (management UI)
 - NATS: `4222`
 - LocalStack (SQS): `4566`
+- Kafka: `9092`
 
 Set the following environment variables when running the scripts to connect to
 these local services:
 
 - `RABBITMQ_URL=amqp://localhost`
 - `NATS_URL=nats://localhost:4222`
+- `KAFKA_BROKERS=localhost:9092`
 - `AWS_REGION=us-east-1`
 - `SQS_ENDPOINT=http://localhost:4566`
 - optionally `AWS_ACCESS_KEY_ID=test` and `AWS_SECRET_ACCESS_KEY=test`
@@ -75,6 +78,16 @@ Run (you can override `MESSAGE_RATE`, `TEST_DURATION_SEC` and `FAIL_AFTER_SEC`):
 
 ```bash
 node nats_test.js
+```
+
+## Kafka Test
+
+Set `KAFKA_BROKERS` to your Kafka brokers (for example from Amazon MSK or Confluent Cloud) and optionally `KAFKA_TOPIC`.
+
+Run (you can override `MESSAGE_RATE`, `TEST_DURATION_SEC` and `FAIL_AFTER_SEC`):
+
+```bash
+node kafka_test.js
 ```
 
 ## Pulumi
