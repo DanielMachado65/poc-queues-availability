@@ -4,7 +4,9 @@
   "description": "poc for testing queues",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "nats": "node nats_test.js",
+    "rabbitmq": "node rabbitmq_test.js",
+    "sqs": "node sqs_test.js"
   },
   "keywords": [],
   "author": "",

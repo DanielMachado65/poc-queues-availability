@@ -13,6 +13,14 @@ Install dependencies once:
 npm install
 ```
 
+You can run the example scripts via npm:
+
+```bash
+npm run rabbitmq   # test RabbitMQ
+npm run sqs        # test SQS
+npm run nats       # test NATS
+```
+
 ## Running Messaging Services Locally
 
 Start RabbitMQ, NATS and a local SQS implementation using Docker Compose:
@@ -32,7 +40,9 @@ these local services:
 
 - `RABBITMQ_URL=amqp://localhost`
 - `NATS_URL=nats://localhost:4222`
-- `AWS_REGION=us-east-1` and `SQS_ENDPOINT=http://localhost:4566`
+- `AWS_REGION=us-east-1`
+- `SQS_ENDPOINT=http://localhost:4566`
+- optionally `AWS_ACCESS_KEY_ID=test` and `AWS_SECRET_ACCESS_KEY=test`
 
 ## RabbitMQ Test
 
