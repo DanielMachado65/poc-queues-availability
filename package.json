@@ -8,7 +8,8 @@
     "rabbitmq": "node rabbitmq_test.js",
     "sqs": "node sqs_test.js",
     "kafka": "node kafka_test.js",
-    "bigquery": "node bigquery_test.js"
+    "bigquery": "node bigquery_test.js",
+    "kafka-bigquery": "node kafka_bigquery.js"
   },
   "keywords": [],
   "author": "",

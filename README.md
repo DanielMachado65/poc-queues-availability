@@ -94,6 +94,14 @@ node kafka_test.js
 
 Use `npm run bigquery` to insert events directly into Google BigQuery. Set `BIGQUERY_DATASET` and `BIGQUERY_TABLE` along with your credentials. The script reports basic latency and throughput metrics.
 
+## Kafka to BigQuery Flow
+
+Run `npm run kafka-bigquery` to publish messages to Kafka and immediately insert
+them into BigQuery. Configure the same environment variables as `kafka_test.js`
+for Kafka connectivity plus `BIGQUERY_DATASET` and `BIGQUERY_TABLE` for the
+destination table. The message rate and duration are controlled via
+`MESSAGE_RATE`, `TEST_DURATION_SEC` and `MESSAGE_COUNT`.
+
 ## Redpanda & Redpanda Connect
 
 Spin up the `redpanda` service from `docker-compose.yml` and run `kafka_test.js` with `KAFKA_BROKERS=localhost:9094`. Redpanda Connect can forward these events to sinks such as BigQuery.
