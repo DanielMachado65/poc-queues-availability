@@ -90,6 +90,18 @@ Run (you can override `MESSAGE_RATE`, `TEST_DURATION_SEC` and `FAIL_AFTER_SEC`):
 node kafka_test.js
 ```
 
+## BigQuery Test
+
+Use `npm run bigquery` to insert events directly into Google BigQuery. Set `BIGQUERY_DATASET` and `BIGQUERY_TABLE` along with your credentials. The script reports basic latency and throughput metrics.
+
+## Redpanda & Redpanda Connect
+
+Spin up the `redpanda` service from `docker-compose.yml` and run `kafka_test.js` with `KAFKA_BROKERS=localhost:9094`. Redpanda Connect can forward these events to sinks such as BigQuery.
+
+## Node-RED
+
+The compose file also provides a `nodered` service on port `1880`. Build flows that consume from your queues and send data to BigQuery using available nodes.
+
 ## Pulumi
 
 The `infrastructure/` folder contains a small Pulumi program that provisions an SQS queue and a RabbitMQ broker using AmazonMQ. Initialize a Pulumi stack and run `pulumi up` to deploy (AWS credentials required).
