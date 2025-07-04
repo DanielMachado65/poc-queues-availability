@@ -36,3 +36,21 @@ services:
       - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
       - ALLOW_PLAINTEXT_LISTENER=yes # só para dev/PoC
+
+  redpanda:
+    image: redpandadata/redpanda:latest
+    command: >-
+      redpanda start --smp 1 --overprovisioned --node-id 0
+      --kafka-addr PLAINTEXT://0.0.0.0:9094
+    ports:
+      - "9094:9094"
+
+  nodered:
+    image: nodered/node-red:latest
+    ports:
+      - "1880:1880"
+    volumes:
+      - nodered_data:/data
+
+volumes:
+  nodered_data:
