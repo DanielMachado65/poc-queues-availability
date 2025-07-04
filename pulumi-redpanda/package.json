@@ -1,0 +1,8 @@
+{
+  "name": "pulumi-redpanda",
+  "main": "index.ts",
+  "devDependencies": {
+    "@pulumi/pulumi": "^3.0.0",
+    "@pulumi/docker": "^3.0.0"
+  }
+}
