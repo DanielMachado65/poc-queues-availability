@@ -61,25 +61,34 @@ services:
   #     - nodered_data:/data
 
   console:
-    image: docker.redpanda.com/redpandadata/console:v2.3.8
-    restart: on-failure
-    entrypoint: /bin/sh
-    command: -c "echo \"$CONSOLE_CONFIG_FILE\" > /tmp/config.yml; /app/console"
+    image: redpandadata/console:latest
+    container_name: redpanda-console
     environment:
-      CONFIG_FILEPATH: /tmp/config.yml
-      CONSOLE_CONFIG_FILE: |
-        kafka:
-          brokers: ["redpanda:9092"]   # porta interna do redpanda
-          schemaRegistry:
-            enabled: true
-            urls: ["http://redpanda:8081"]
-        connect:
-          enabled: true
-          clusters:
-            - name: datagen
-              url: http://connect:8083
+      - KAFKA_BROKERS=redpanda:9092
     ports:
-      - "8080:8080"
+      - "8080:8080" # Web UI http://localhost:8080
+    depends_on:
+      - redpanda
+
+  connect:
+    image: redpandadata/connectors:latest
+    container_name: kafka-connect
+    ports:
+      - "8083:8083"
+    environment:
+      # ✅ Nome correto reconhecido pelo entry‑point
+      CONNECT_CONFIGURATION: |
+        bootstrap.servers=redpanda:9092
+        group.id=connect-cluster
+        key.converter=org.apache.kafka.connect.json.JsonConverter
+        key.converter.schemas.enable=false
+        value.converter=org.apache.kafka.connect.json.JsonConverter
+        value.converter.schemas.enable=false
+        config.storage.topic=_connect_configs
+        offset.storage.topic=_connect_offsets
+        status.storage.topic=_connect_status
+        plugin.path=/opt/kafka/redpanda-plugins
+        rest.port=8083
     depends_on:
       - redpanda
 

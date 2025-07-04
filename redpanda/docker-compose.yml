@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  # ===================== REDPANDA BROKER ======================
+  redpanda:
+    image: redpandadata/redpanda:latest
+    container_name: redpanda
+    command: >
+      redpanda start
+      --smp 1
+      --memory 512M
+      --overprovisioned
+      --node-id 0
+      --check=false
+      --kafka-addr PLAINTEXT://0.0.0.0:9092
+      --advertise-kafka-addr PLAINTEXT://localhost:9092
+    ports:
+      - "9092:9092" # Kafka API
+      - "9644:9644" # Admin API (Prometheus)
+    volumes:
+      - redpanda_data:/var/lib/redpanda/data
+
+  # ===================== CONSOLE ======================
+  console:
+    image: redpandadata/console:latest
+    container_name: redpanda-console
+    environment:
+      - KAFKA_BROKERS=redpanda:9092
+    ports:
+      - "8080:8080" # Web UI http://localhost:8080
+    depends_on:
+      - redpanda
+
+  # ===================== KAFKA CONNECT ======================
+  connect:
+    image: redpandadata/connectors:latest
+    container_name: kafka-connect
+    ports:
+      - "8083:8083"
+    environment:
+      KAFKA_CONNECT_CONFIGURATION: |
+        bootstrap.servers=redpanda:9092
+        group.id=connect-cluster
+        key.converter=org.apache.kafka.connect.json.JsonConverter
+        value.converter=org.apache.kafka.connect.json.JsonConverter
+        key.converter.schemas.enable=false
+        value.converter.schemas.enable=false
+        config.storage.topic=_connect_configs
+        offset.storage.topic=_connect_offsets
+        status.storage.topic=_connect_status
+        plugin.path=/opt/kafka/redpanda-plugins
+        rest.port=8083
+    depends_on:
+      - redpanda
+
+volumes:
+  redpanda_data:
