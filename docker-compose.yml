@@ -1,23 +1,23 @@
 version: "3.8"
 services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
+  # rabbitmq:
+  #   image: rabbitmq:3-management
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
 
-  nats:
-    image: nats:2
-    ports:
-      - "4222:4222"
-      - "8222:8222"
+  # nats:
+  #   image: nats:2
+  #   ports:
+  #     - "4222:4222"
+  #     - "8222:8222"
 
-  localstack:
-    image: localstack/localstack
-    environment:
-      - SERVICES=sqs
-    ports:
-      - "4566:4566"
+  # localstack:
+  #   image: localstack/localstack
+  #   environment:
+  #     - SERVICES=sqs
+  #   ports:
+  #     - "4566:4566"
   kafka:
     image: bitnami/kafka:3.7 # fixe a tag que você quer
     container_name: kafka
@@ -53,12 +53,12 @@ services:
     volumes:
       - redpanda_data:/var/lib/redpanda/data
 
-  nodered:
-    image: nodered/node-red:latest
-    ports:
-      - "1880:1880"
-    volumes:
-      - nodered_data:/data
+  # nodered:
+  #   image: nodered/node-red:latest
+  #   ports:
+  #     - "1880:1880"
+  #   volumes:
+  #     - nodered_data:/data
 
   console:
     image: docker.redpanda.com/redpandadata/console:v2.3.8
@@ -69,7 +69,7 @@ services:
       CONFIG_FILEPATH: /tmp/config.yml
       CONSOLE_CONFIG_FILE: |
         kafka:
-          brokers: ["redpanda:29092"]
+          brokers: ["redpanda:9092"]   # porta interna do redpanda
           schemaRegistry:
             enabled: true
             urls: ["http://redpanda:8081"]
