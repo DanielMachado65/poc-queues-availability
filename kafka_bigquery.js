@@ -64,7 +64,11 @@ async function main() {
         payload.id
       );
       try {
-        await table.insert([payload]);
+        // mock a insert in bigquery
+        setTimeout(() => 300);
+
+        // await table.insert([payload]);
+
         latencies.push(Date.now() - payload.ts);
       } catch (err) {
         console.error("BigQuery insert error:", err.errors || err);
