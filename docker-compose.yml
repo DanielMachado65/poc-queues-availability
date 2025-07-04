@@ -39,17 +39,18 @@ services:
 
   redpanda:
     image: redpandadata/redpanda:latest
-    container_name: redpanda
     command: >
-      redpanda start
-      --smp 1
-      --memory 512M
-      --overprovisioned
-      --node-id 0
-      --check=false
+      redpanda start \
+        --smp 1 \
+        --memory 512M \
+        --overprovisioned \
+        --node-id 0 \
+        --check=false \
+        --kafka-addr 0.0.0.0:9092 \
+        --advertise-kafka-addr redpanda:9092
     ports:
-      - "9094:9092" # Kafka API
-      - "9644:9644" # Admin API (Prometheus)
+      - "9094:9092"   # interno → host 9094
+      - "19092:19092" # listener OUTSIDE (opcional)
     volumes:
       - redpanda_data:/var/lib/redpanda/data
 
