@@ -1,0 +1,61 @@
+version: "3.8"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  
+  bench:
+    image: node:20
+    working_dir: /app
+    volumes:
+      - ./rabbitmq/rabbit_bigquery.js:/app/bench.js
+    command: ["node", "bench.js"]
+    environment:
+      - KAFKA_BROKERS=redpanda:9092
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    depends_on:
+      - redpanda
+      - rabbitmq
+
+  redpanda:
+    image: redpandadata/redpanda:latest
+    command: >
+      redpanda start --smp 1 --memory 512M --overprovisioned
+      --node-id 1
+      --check=false
+      # 2 listeners
+      --kafka-addr  INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:19092
+      --advertise-kafka-addr INTERNAL://redpanda:9092,EXTERNAL://localhost:19092
+    ports:
+      - "9092:19092"          # host→EXTERNAL
+      - "9644:9644"           # admin
+
+  connect: # Redpanda Connect  (≠ Kafka Connect!)
+    image: redpandadata/connect:latest # CLI + runtime
+    container_name: redpanda-connect-rabbitmq
+    environment:
+      - RP_CONFIG=/config/pipeline.yaml # caminho do pipeline
+    volumes:
+      - ./pipeline.yaml:/config/pipeline.yaml:ro
+      - ./gcp-creds.json:/secrets/gcp-creds.json:ro
+    depends_on:
+      - rabbitmq
+      - redpanda
+    ports:
+      - "4195:4195" # healthz / metrics (opcional)
+
+  console:
+    image: redpandadata/console:latest
+    container_name: redpanda-console-rabbitmq
+    environment:
+      - KAFKA_BROKERS=localhost:9092
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redpanda
+
+volumes:
+  redpanda_data:
