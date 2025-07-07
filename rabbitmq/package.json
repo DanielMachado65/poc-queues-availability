@@ -1,0 +1,22 @@
+{
+  "name": "rabbitmq",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "consumer": "node consumer.js",
+    "consumer-test": "node pipeline-test.js",
+    "producer": "node producer.js",
+    "producer-test": "node producer-test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@google-cloud/bigquery": "^8.1.0",
+    "amqplib": "^0.10.8",
+    "dotenv": "^17.0.1",
+    "kafkajs": "^2.2.4"
+  }
+}

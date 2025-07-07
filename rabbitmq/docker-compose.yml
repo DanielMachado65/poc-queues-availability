@@ -1,61 +1,66 @@
-version: "3.8"
+version: "3.9"
 
 services:
   rabbitmq:
     image: rabbitmq:3-management
+    container_name: rabbitmq
     ports:
-      - "5672:5672"
-      - "15672:15672"
-  
-  bench:
-    image: node:20
-    working_dir: /app
+      - "5672:5672" # AMQP
+      - "15672:15672" # UI
     volumes:
-      - ./rabbitmq/rabbit_bigquery.js:/app/bench.js
-    command: ["node", "bench.js"]
-    environment:
-      - KAFKA_BROKERS=redpanda:9092
-      - RABBITMQ_URL=amqp://rabbitmq:5672
-    depends_on:
-      - redpanda
-      - rabbitmq
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks: [events_net]
 
   redpanda:
-    image: redpandadata/redpanda:latest
-    command: >
-      redpanda start --smp 1 --memory 512M --overprovisioned
-      --node-id 1
-      --check=false
-      # 2 listeners
-      --kafka-addr  INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:19092
-      --advertise-kafka-addr INTERNAL://redpanda:9092,EXTERNAL://localhost:19092
-    ports:
-      - "9092:19092"          # host→EXTERNAL
-      - "9644:9644"           # admin
-
-  connect: # Redpanda Connect  (≠ Kafka Connect!)
-    image: redpandadata/connect:latest # CLI + runtime
-    container_name: redpanda-connect-rabbitmq
-    environment:
-      - RP_CONFIG=/config/pipeline.yaml # caminho do pipeline
-    volumes:
-      - ./pipeline.yaml:/config/pipeline.yaml:ro
-      - ./gcp-creds.json:/secrets/gcp-creds.json:ro
-    depends_on:
-      - rabbitmq
+    image: docker.redpanda.com/redpandadata/redpanda:v25.1.7
+    container_name: redpanda
+    command:
       - redpanda
+      - start
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr internal://redpanda:8082,external://localhost:18082
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
+      - --rpc-addr redpanda:33145
+      - --advertise-rpc-addr redpanda:33145
+      - --mode dev-container
+      - --smp 1
+      - --default-log-level=info
+    volumes:
+      - redpanda_data:/var/lib/redpanda/data
     ports:
-      - "4195:4195" # healthz / metrics (opcional)
+      - "18081:18081" # Schema Registry
+      - "18082:18082" # Panda-proxy
+      - "19092:19092" # Kafka external
+      - "9644:9644" # Admin API
+    networks: [events_net]
 
-  console:
-    image: redpandadata/console:latest
-    container_name: redpanda-console-rabbitmq
+  redpanda-console:
+    image: docker.redpanda.com/redpandadata/console:v3.1.2
+    container_name: redpanda-console
+    entrypoint: /bin/sh
+    command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml; /app/console'
     environment:
-      - KAFKA_BROKERS=localhost:9092
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["redpanda:9092"]
+        schemaRegistry:
+          enabled: true
+          urls: ["http://redpanda:8081"]
+        redpanda:
+          adminApi:
+            enabled: true
+            urls: ["http://redpanda:9644"]
+    depends_on: [redpanda]
     ports:
       - "8080:8080"
-    depends_on:
-      - redpanda
+    networks: [events_net]
+
+networks:
+  events_net:
 
 volumes:
+  rabbitmq_data:
   redpanda_data:
