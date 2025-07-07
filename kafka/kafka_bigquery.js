@@ -1,8 +1,12 @@
 const { Kafka, Partitioners } = require("kafkajs");
-const { percentile } = require("./util");
+const { BigQuery } = require("@google-cloud/bigquery");
+const { percentile } = require("../util");
 
 async function main() {
   const topic = process.env.KAFKA_TOPIC || "test";
+  const datasetId = process.env.BIGQUERY_DATASET || "test";
+  const tableId = process.env.BIGQUERY_TABLE || "messages";
+  const projectId = process.env.BQ_PROJECT_ID;
 
   const rate = parseInt(process.env.MESSAGE_RATE || "100", 10);
   const durationSec = parseInt(process.env.TEST_DURATION_SEC || "600", 10);
@@ -10,70 +14,70 @@ async function main() {
     process.env.MESSAGE_COUNT || (rate * durationSec).toString(),
     10
   );
-  const failAfter = parseInt(process.env.FAIL_AFTER_SEC || "0", 10);
+
+  const bigquery = new BigQuery(projectId ? { projectId } : {});
+  const table = bigquery.dataset(datasetId).table(tableId);
 
   const brokers = (process.env.KAFKA_BROKERS || "127.0.0.1:9092")
     .split(",")
     .map((b) => b.trim());
 
+  // create a new Kafka client
   const kafka = new Kafka({
     clientId: "poc-client",
     brokers,
-    ssl: process.env.KAFKA_SSL === "true", // para MSK/Confluent Cloud
+    ssl: process.env.KAFKA_SSL === "true",
     sasl: process.env.KAFKA_SASL_USER && {
-      // idem, se precisar auth
       mechanism: "plain",
       username: process.env.KAFKA_SASL_USER,
       password: process.env.KAFKA_SASL_PASS,
     },
-    // Mantém particionamento antigo, mas pode remover se não precisar
     createPartitioner: Partitioners.LegacyPartitioner,
   });
+
   const producer = kafka.producer({
     createPartitioner: Partitioners.LegacyPartitioner,
   });
   const consumer = kafka.consumer({ groupId: "poc-group" });
 
-  try {
-    await producer.connect();
-    await consumer.connect();
-    console.log("Kafka available");
-  } catch (err) {
-    console.error("Kafka unavailable", err);
-    return;
-  }
-
+  await producer.connect();
+  await consumer.connect();
   await consumer.subscribe({ topic, fromBeginning: true });
+  console.log("Kafka available, starting test");
 
   let sent = 0;
-  let received = 0;
+  let inserted = 0;
   const latencies = [];
-  const seen = new Set();
-  let duplicates = 0;
 
   const start = Date.now();
 
-  if (failAfter > 0) {
-    setTimeout(() => {
-      console.log("Simulating Kafka failure: disconnecting producer");
-      producer.disconnect().catch(() => {});
-    }, failAfter * 1000);
-  }
-
-  await consumer.run({
+  // for each message published in big query
+  consumer.run({
     eachMessage: async ({ message }) => {
       if (!message.value) return;
-      const { id, ts } = JSON.parse(message.value.toString());
-      const now = Date.now();
-      latencies.push(now - ts);
-      if (seen.has(id)) duplicates++;
-      else seen.add(id);
-      received++;
-      if (received === count) {
-        const duration = (now - start) / 1000;
+      const payload = JSON.parse(message.value.toString());
+      const insertStart = Date.now();
+      console.log(
+        "inserted",
+        insertStart.toLocaleString(),
+        "payload",
+        payload.id
+      );
+      try {
+        // mock a insert in bigquery
+        setTimeout(() => 300);
+
+        // await table.insert([payload]);
+
+        latencies.push(Date.now() - payload.ts);
+      } catch (err) {
+        console.error("BigQuery insert error:", err.errors || err);
+      }
+      inserted++;
+      if (inserted === count) {
+        const duration = (Date.now() - start) / 1000;
         console.log("p95 latency ms:", percentile(latencies, 95));
-        console.log("duplicates:", duplicates);
-        console.log("throughput msg/s:", (received / duration).toFixed(2));
+        console.log("throughput msg/s:", (inserted / duration).toFixed(2));
         await producer.disconnect();
         await consumer.disconnect();
       }
@@ -91,7 +95,7 @@ async function main() {
     }
     if (sent >= count) {
       clearInterval(sendInterval);
-      console.log(`Sent ${sent} messages, waiting for receipts...`);
+      console.log(`Sent ${sent} messages, waiting for processing...`);
     }
   }, 1000);
 }
