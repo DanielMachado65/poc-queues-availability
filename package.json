@@ -6,10 +6,11 @@
   "scripts": {
     "nats": "node nats_test.js",
     "rabbitmq": "node rabbitmq_test.js",
+    "rabbitmq-bigquery": "node rabbitmq/rabbitmq_bigquery.js",
     "sqs": "node sqs_test.js",
     "kafka": "node kafka/kafka_test.js",
-    "bigquery": "node bigquery_test.js",
-    "kafka-bigquery": "node kafka/kafka_bigquery.js"
+    "kafka-bigquery": "node kafka/kafka_bigquery.js",
+    "bigquery": "node bigquery_test.js"
   },
   "keywords": [],
   "author": "",
