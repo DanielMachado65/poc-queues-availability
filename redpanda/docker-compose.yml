@@ -1,7 +1,24 @@
-version: "3.9"
-
+version: "3.8"
 services:
-  # ===================== REDPANDA BROKER ======================
+  kafka:
+    image: bitnami/kafka:3.7 
+    container_name: kafka
+    ports:
+      - "9092:9092" # broker
+      - "9093:9093" # controller (intra-cluster)
+    environment:
+      # ---- KRaft ----
+      - KAFKA_ENABLE_KRAFT=true
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      # ---- listeners ----
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - ALLOW_PLAINTEXT_LISTENER=yes # só para dev/PoC
+
   redpanda:
     image: redpandadata/redpanda:latest
     container_name: redpanda
@@ -13,14 +30,13 @@ services:
       --node-id 0
       --check=false
       --kafka-addr PLAINTEXT://0.0.0.0:9092
-      --advertise-kafka-addr PLAINTEXT://localhost:9092
+      --advertise-kafka-addr PLAINTEXT://redpanda:9092
     ports:
-      - "9092:9092" # Kafka API
+      - "9094:9092" # Kafka API
       - "9644:9644" # Admin API (Prometheus)
     volumes:
       - redpanda_data:/var/lib/redpanda/data
 
-  # ===================== CONSOLE ======================
   console:
     image: redpandadata/console:latest
     container_name: redpanda-console
@@ -31,27 +47,30 @@ services:
     depends_on:
       - redpanda
 
-  # ===================== KAFKA CONNECT ======================
   connect:
     image: redpandadata/connectors:latest
     container_name: kafka-connect
     ports:
       - "8083:8083"
     environment:
-      KAFKA_CONNECT_CONFIGURATION: |
+      CONNECT_CONFIGURATION: |
         bootstrap.servers=redpanda:9092
         group.id=connect-cluster
         key.converter=org.apache.kafka.connect.json.JsonConverter
-        value.converter=org.apache.kafka.connect.json.JsonConverter
         key.converter.schemas.enable=false
+        value.converter=org.apache.kafka.connect.json.JsonConverter
         value.converter.schemas.enable=false
         config.storage.topic=_connect_configs
         offset.storage.topic=_connect_offsets
         status.storage.topic=_connect_status
         plugin.path=/opt/kafka/redpanda-plugins
         rest.port=8083
+        offset.storage.replication.factor=1
+        config.storage.replication.factor=1
+        status.storage.replication.factor=1
     depends_on:
       - redpanda
 
 volumes:
+  nodered_data:
   redpanda_data:
