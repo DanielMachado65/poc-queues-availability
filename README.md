@@ -36,6 +36,7 @@ This will expose the following ports:
 - NATS: `4222`
 - LocalStack (SQS): `4566`
 - Kafka: `9092`
+- Redpanda: `9094` (if using the `redpanda` service)
 
 Set the following environment variables when running the scripts to connect to
 these local services:
@@ -101,6 +102,14 @@ them into BigQuery. Configure the same environment variables as `kafka_test.js`
 for Kafka connectivity plus `BIGQUERY_DATASET` and `BIGQUERY_TABLE` for the
 destination table. The message rate and duration are controlled via
 `MESSAGE_RATE`, `TEST_DURATION_SEC` and `MESSAGE_COUNT`.
+
+## RabbitMQ -> Redpanda -> BigQuery Flow
+
+Run `npm run rabbitmq-bigquery` to publish messages to RabbitMQ, forward them to
+Redpanda and then insert them into BigQuery. Set `RABBITMQ_URL`, `KAFKA_BROKERS`
+and `KAFKA_TOPIC` alongside `BIGQUERY_DATASET` and `BIGQUERY_TABLE`. The message
+rate and duration are controlled via `MESSAGE_RATE`, `TEST_DURATION_SEC` and
+`MESSAGE_COUNT`.
 
 ## Redpanda & Redpanda Connect
 
