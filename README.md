@@ -124,3 +124,4 @@ The compose file also provides a `nodered` service on port `1880`. Build flows t
 The `infrastructure/` folder contains a small Pulumi program that provisions an SQS queue and a RabbitMQ broker using AmazonMQ. Initialize a Pulumi stack and run `pulumi up` to deploy (AWS credentials required).
 
 A second program `kafka_redpanda.ts` creates Docker containers for Kafka and Redpanda using Pulumi. This allows you to spin up the local broker stack with `pulumi up` instead of using Docker Compose.
+An additional program `edge-function.ts` provisions a Lambda function that forwards tracking events to RabbitMQ.
